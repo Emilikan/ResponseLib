@@ -1,8 +1,0 @@
-ru/emilnasyrov/lib/unitpay/modules/AbstractResponse.class
-ru/emilnasyrov/lib/unitpay/modules/ExceptionDateResponse.class
-ru/emilnasyrov/lib/unitpay/annotates/HttpException.class
-ru/emilnasyrov/lib/unitpay/modules/AbstractException.class
-ru/emilnasyrov/lib/unitpay/processor/AnnotationProcessor.class
-ru/emilnasyrov/lib/unitpay/modules/Locals.class
-META-INF/services/javax.annotation.processing.Processor
-ru/emilnasyrov/lib/unitpay/annotates/ResponseAnnotation.class

@@ -1,6 +1,7 @@
 package ru.emilnasyrov.lib.unitpay.processor;
 
 import com.google.auto.service.AutoService;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import ru.emilnasyrov.lib.unitpay.annotates.HttpException;
 import ru.emilnasyrov.lib.unitpay.modules.ExceptionDateResponse;
@@ -63,7 +64,7 @@ import java.util.stream.Collectors;
  * typeElement.getInterfaces() - список интерфейсов или пусто (implements)
  * typeElement.getNestingKind - тип вложенности элемента
  */
-@SupportedAnnotationTypes("ru.emilnasyrov.lib.unitpay.annotates.HttpException")
+@SupportedAnnotationTypes({"ru.emilnasyrov.lib.unitpay.annotates.HttpException", "org.springframework.boot.autoconfigure.SpringBootApplication"})
 @AutoService(Processor.class)
 public class AnnotationProcessor extends AbstractProcessor {
     private Elements elementUtils;
@@ -72,6 +73,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     private final List<Element> annotatedOnlyForUnitpayClasses = new ArrayList<>();
 
     private final String packageName = "ru.emilnasyrov.lib.unitpay";
+    private Element springRootElement = null;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -95,11 +97,26 @@ public class AnnotationProcessor extends AbstractProcessor {
             }
         }
 
-        try {
-            writeAwesomeExceptionHandler(annotatedOnlyForUnitpayClasses);
-        } catch (IOException e) {
-            e.printStackTrace();
+        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(SpringBootApplication.class)){
+            if (springRootElement==null) springRootElement = annotatedElement;
+            else {
+                error(annotatedElement, "The project should only have 1 a class annotated @SpringBootApplication");
+                return true;
+            }
+        }
+
+        if (springRootElement==null){
+            error(annotatedOnlyForUnitpayClasses.get(0), "The project must have a class annotated @SpringBootApplication");
             return true;
+        }
+
+        if (annotatedOnlyForUnitpayClasses.size()!=0) {
+            try {
+                writeAwesomeExceptionHandler(annotatedOnlyForUnitpayClasses);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return true;
+            }
         }
 
         return true;
@@ -113,7 +130,7 @@ public class AnnotationProcessor extends AbstractProcessor {
             // пакет файла
             //TODO заменить на путь от начального класса Spring (по аннотации)
             out.print("package ");
-            out.print(packageName + ".handler");
+            out.print(springRootElement.getEnclosingElement() + ".handler");
             out.println(";");
             out.println();
 
@@ -158,7 +175,6 @@ public class AnnotationProcessor extends AbstractProcessor {
             out.print("public class ");
             out.print(mClassName);
             out.println(" extends ResponseEntityExceptionHandler {");
-            out.println();
 
             // хендлеры
             for (Element element: annotatedClasses){
@@ -189,6 +205,11 @@ public class AnnotationProcessor extends AbstractProcessor {
 //                out.println("               "+code+",");
 //                out.println("               \""+message+"\",");
 //                out.println("               Locals."+local+");");
+
+                // добавление вызова глобальной ошибки в код
+                if(element.getAnnotation(HttpException.class).addGlobalError().turnOn()){
+
+                }
 
                 // TODO класс ответа обязательно должен реализовывать пустой конструктор (написать проверку на это)
                 out.println("       return new " + exceptionResponse + "().generateError(");

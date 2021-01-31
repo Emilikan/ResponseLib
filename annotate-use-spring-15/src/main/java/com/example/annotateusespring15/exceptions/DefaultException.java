@@ -1,6 +1,5 @@
-package ru.sysout.annotationuse;
+package com.example.annotateusespring15.exceptions;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import ru.emilnasyrov.lib.unitpay.annotates.HttpException;
 
 @HttpException(

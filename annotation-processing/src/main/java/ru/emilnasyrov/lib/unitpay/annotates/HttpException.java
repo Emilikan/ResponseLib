@@ -19,4 +19,5 @@ public @interface HttpException {
     String message();
     Locals locals() default Locals.RUS;
     Class<? extends AbstractResponse> responseClass() default ExceptionDateResponse.class;
+    GlobalError addGlobalError() default @GlobalError(turnOn = false);
 }

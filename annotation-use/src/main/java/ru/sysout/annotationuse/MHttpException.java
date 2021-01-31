@@ -1,9 +1,11 @@
 package ru.sysout.annotationuse;
 
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import ru.emilnasyrov.lib.unitpay.annotates.HttpException;
 import ru.emilnasyrov.lib.unitpay.modules.Locals;
 
+@SpringBootApplication
 @HttpException(
         code = 333,
         message = "Какая-то ошибка (MHttpException)",
