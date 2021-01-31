@@ -85,11 +85,15 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        boolean addGlobalErrorFiles = false;
 
         // STEP 1 выполняем проверку элементов и подсчитываем их количество
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(HttpException.class)) {
             if (annotatedElement.getKind() == ElementKind.CLASS) {
                 annotatedOnlyForUnitpayClasses.add(annotatedElement);
+                if (annotatedElement.getAnnotation(HttpException.class).addGlobalError().turnOn()){
+                    addGlobalErrorFiles = true;
+                }
             } else {
                 error(annotatedElement, "Only classes can be annotated with @%s",
                         HttpException.class.getSimpleName());
@@ -110,6 +114,19 @@ public class AnnotationProcessor extends AbstractProcessor {
             return true;
         }
 
+        if (addGlobalErrorFiles){
+            try {
+                writeNotificationEmails();
+                writeGlobalErrors();
+                writeGlobalErrorsRepository();
+                writeNotificationEmailsRepository();
+                writeCodeGlobalErrorService();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return true;
+            }
+        }
+
         if (annotatedOnlyForUnitpayClasses.size()!=0) {
             try {
                 writeAwesomeExceptionHandler(annotatedOnlyForUnitpayClasses);
@@ -122,6 +139,183 @@ public class AnnotationProcessor extends AbstractProcessor {
         return true;
     }
 
+    private void writeCodeGlobalErrorService() throws IOException {
+        String mClassName = "CodeGlobalErrorService";
+
+        JavaFileObject builderFile = filer.createSourceFile(mClassName);
+        try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+            // пакет файла
+            out.println("package " + springRootElement.getEnclosingElement() + ".service;");
+            out.println();
+
+            // импорты
+            out.println("import " + springRootElement.getEnclosingElement() + ".entities.NotificationEmails;");
+            out.println("import " + springRootElement.getEnclosingElement() + ".repositories.NotificationEmailsRepository;");
+            out.println("import " + springRootElement.getEnclosingElement() + ".entities.GlobalErrors;");
+            out.println("import " + springRootElement.getEnclosingElement() + ".repositories.GlobalErrorsRepository;");
+            out.println("import org.springframework.mail.javamail.JavaMailSenderImpl;");
+            out.println("import org.springframework.mail.javamail.MimeMessageHelper;");
+            out.println("import org.springframework.stereotype.Service;");
+            out.println("import javax.mail.MessagingException;");
+            out.println("import javax.mail.internet.InternetAddress;");
+            out.println("import javax.mail.internet.MimeMessage;");
+            out.println("import java.util.Arrays;");
+            out.println("import java.util.Iterator;");
+            out.println("import java.util.List;");
+            out.println("import java.util.Properties;");
+            // Объявление класса
+            out.println("@Service");
+            out.println("public class " + mClassName + " {");
+            out.println("    private final NotificationEmailsRepository notificationEmailsRepository;");
+            out.println("    private final GlobalErrorsRepository globalErrorsRepository;");
+            out.println("    private final MainSettingsProperties settingsProperties;");
+            out.println("    private final static String MESSAGE_TYPE = \"text/html; charset=utf-8\";");
+            out.println();
+
+            out.println("    /**");
+            out.println("     * Добавляем новую глобальную ошибку");
+            out.println("     *");
+            out.println("     * @param code       код ошибки");
+            out.println("     * @param message    текстовое описание");
+            out.println("     * @param stackTrace стэктрейс ошибки");
+            out.println("     * @param importance важность (от 1 до 4, где 1 - критическая ошибка, 2 - средняя важность, 3 - обычная важность, 4 - дебаг)");
+            out.println("     */");
+            out.println("    public void addNewGlobalError(int code, String message, StackTraceElement[] stackTrace, int importance) {");
+            out.println("        sendMessage(importance, message, getLocale(stackTrace), code, getStackTrace(stackTrace));");
+            out.println("    }");
+            out.println();
+
+            out.println("    /**");
+            out.println("     * Добавляем новую глобальную ошибку");
+            out.println("     *");
+            out.println("     * @param code       код ошибки");
+            out.println("     * @param message    текстовое описание");
+            out.println("     * @param local      путь до ошибки");
+            out.println("     * @param importance важность (от 1 до 4, где 1 - критическая ошибка, 2 - средняя важность, 3 - обычная важность, 4 - дебаг)");
+            out.println("     */");
+            out.println("    public void addNewGlobalError(int code, String message, String local, int importance) {");
+            out.println("        sendMessage(importance, message, local, code, null);");
+            out.println("    }");
+            out.println();
+
+            out.println("    /**");
+            out.println("     * Отправка HTML письма");
+            out.println("     *");
+            out.println("     * @param to      Адресат");
+            out.println("     * @param subject Тема письма");
+            out.println("     * @param html    Тело письма");
+            out.println("     * @throws MessagingException Ошибка в инициализации отправителя");
+            out.println("     */");
+            out.println("    private void sendHTMLMail(String to, String subject, String html) throws MessagingException {");
+            out.println("        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();");
+            out.println();
+            out.println("        String host = smtpProperties.getHost();");
+            out.println("        int port = Integer.parseInt(smtpProperties.getPort());");
+            out.println("        String user = smtpProperties.getUsername();");
+            out.println("        String password = smtpProperties.getPassword();");
+            out.println();
+            out.println("        mailSender.setHost(host);");
+            out.println("        mailSender.setPort(port);");
+            out.println("        mailSender.setUsername(user);");
+            out.println("        mailSender.setPassword(password);");
+            out.println();
+            out.println("        Properties props = mailSender.getJavaMailProperties();");
+            out.println("        props.put(\"mail.transport.protocol\", \"smtp\");");
+            out.println("        props.put(\"mail.smtp.auth\", \"true\");");
+            out.println("        props.put(\"mail.debug\", \"true\");");
+            out.println("        mailSender.setJavaMailProperties(props);\n");
+            out.println();
+            out.println("        MimeMessage message = mailSender.createMimeMessage();");
+            out.println("        MimeMessageHelper helper = new MimeMessageHelper(message, true);");
+            out.println();
+            out.println("        helper.setTo(to);");
+            out.println("        helper.setSubject(subject);");
+            out.println("        message.setFrom(new InternetAddress(user));");
+            out.println("        message.setContent(html, MESSAGE_TYPE);");
+            out.println();
+            out.println("         mailSender.send(message);");
+            out.println("    }");
+            out.println();
+
+            out.println("    /**");
+            out.println("     * Отправка сообщения");
+            out.println();
+            out.println("     * @param importance важность (от 1 до 4, где 1 - критическая ошибка, 2 - средняя важность, 3 - обычная важность, 4 - дебаг)");
+            out.println("     * @param message текст ошибки");
+            out.println("     * @param local путь до места, где возникла ошибка");
+            out.println("     * @param code код ошибки");
+            out.println("     * @param stackTrace stackTrace ошибки");
+            out.println("     */");
+            out.println("    private void sendMessage (int importance, String message, String local, int code, String stackTrace) {");
+            out.println("        try {");
+            out.println("            if (importance == 1 || importance == 2) {");
+            out.println("                List<NotificationEmails> notificationEmailsList = notificationEmailsRepository.findAll();");
+            out.println("                String subject = \"В системе GameValues произошла серьезная ошибка уровня \" + importance;");
+            out.println("                String body = \"Сообщение об ошибке: \" + message + \". Ошибка произошла в \" + local;");
+            out.println("                for (NotificationEmails notificationEmails : notificationEmailsList) {");
+            out.println("                    sendHTMLMail(notificationEmails.getEmail(), subject, body);");
+            out.println("                }");
+            out.println("            }");
+            out.println("        } catch (Exception e) {");
+            out.println("            GlobalErrors error = new GlobalErrors(");
+            out.println("                    1,");
+            out.println("                    \"Не удалось отправить письмо. Сообщение: \" + e,");
+            out.println("                    \"/src/main/java/com.sk.webstudio.Transaction/modules/SecondaryFunctions ф-ия addNewGlobalErrorWithLocal\",");
+            out.println("                    null,");
+            out.println("                    1);");
+            out.println("            globalErrorsRepository.save(error);");
+            out.println("        } finally {");
+            out.println("            GlobalErrors error = new GlobalErrors(code, message, local, stackTrace, importance);");
+            out.println("            globalErrorsRepository.save(error);");
+            out.println("        }");
+            out.println("    }");
+            out.println();
+
+            out.println("    /**");
+            out.println("     * Получаем читабельный stackTrace, конвертированный в строку");
+            out.println("     *");
+            out.println("     * @param stackTrace stackTrace типа StackTraceElement[]");
+            out.println("     * @return stackTrace, конвертированный в строку");
+            out.println("     */");
+            out.println("    private String getStackTrace (StackTraceElement[] stackTrace) {");
+            out.println("        StringBuilder result = new StringBuilder();");
+            out.println("        Iterator<StackTraceElement> iterator = Arrays.stream(stackTrace).iterator();");
+            out.println("        while (iterator.hasNext()){");
+            out.println("            result.append(iterator.next().toString()).append(\"\\n\");");
+            out.println("        }");
+            out.println("        return result.toString();");
+            out.println("    }");
+            out.println();
+
+            out.println("    /**");
+            out.println("     * получаем путь до ошибки из StackTraceElement[]");
+            out.println("     *");
+            out.println("     * @param stackTrace stackTrace типа StackTraceElement[]");
+            out.println("     * @return путь до ошибки");
+            out.println("     */");
+            out.println("    private String getLocale (StackTraceElement[] stackTrace) {");
+            out.println("        StringBuilder result = new StringBuilder();");
+            out.println("        Iterator<StackTraceElement> iterator = Arrays.stream(stackTrace).iterator();");
+            out.println("        while (iterator.hasNext()){");
+            out.println("            StackTraceElement stackTraceElement = iterator.next();");
+            out.println("            String[] subStr = stackTraceElement.getClassName().split(\"\\\\.\");");
+            out.println("            StringBuilder prefix = new StringBuilder();");
+            out.println("            for (int i=0; i<3; i++){");
+            out.println("                prefix.append(subStr[i]).append(\".\");");
+            out.println("            }");
+            out.println("            if (prefix.toString().equals(settingsProperties.getGroup() + \".\")) {");
+            out.println("                result.append(stackTraceElement.getClassName()).append(\" метод \").append(stackTraceElement.getMethodName()).append(\" строка \").append(stackTraceElement.getLineNumber()).append(\"\\n\");");
+            out.println("            }");
+            out.println("        }");
+            out.println("        return result.toString();");
+            out.println("    }");
+            // конец класса
+            out.println("}");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void writeAwesomeExceptionHandler(List<Element> annotatedClasses) throws IOException {
         String mClassName = "AwesomeExceptionHandler";
 
@@ -129,15 +323,11 @@ public class AnnotationProcessor extends AbstractProcessor {
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             // пакет файла
             //TODO заменить на путь от начального класса Spring (по аннотации)
-            out.print("package ");
-            out.print(springRootElement.getEnclosingElement() + ".handler");
-            out.println(";");
+            out.println("package " + springRootElement.getEnclosingElement() + ".handler;");
             out.println();
 
             // импорты
-            out.print("import ");
-            out.print(packageName + ".modules.ExceptionDateResponse");
-            out.println(";");
+            out.println("import " + packageName + ".modules.ExceptionDateResponse;");
             out.println("import org.springframework.web.bind.annotation.ControllerAdvice;");
             out.println("import org.springframework.http.ResponseEntity;");
             out.println("import org.springframework.http.HttpStatus;");
@@ -224,6 +414,248 @@ public class AnnotationProcessor extends AbstractProcessor {
 
             // конец класса
             out.println("}");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // печатаем entities
+    private void writeNotificationEmails () throws IOException {
+        String mClassName = "NotificationEmails";
+
+        JavaFileObject builderFile = filer.createSourceFile(mClassName);
+        try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+            // пакет файла
+            out.println("package " + springRootElement.getEnclosingElement() + ".entities;");
+            out.println();
+
+            // импорты
+            out.println("import org.apache.commons.validator.routines.EmailValidator;");
+            out.println("import javax.persistence.*;");
+            out.println();
+
+            out.println("@Entity");
+            out.println("@Table(name = \"notification_emails\")");
+            out.println("public class " + mClassName + "{");
+            out.println("    @Id");
+            out.println("    @GeneratedValue(strategy = GenerationType.IDENTITY)");
+            out.println("    @Column(name = \"id\")");
+            out.println("    private Long id;");
+            out.println();
+
+            out.println("    @Column(name = \"email\")");
+            out.println("    private String email;");
+            out.println();
+
+            out.println("    @Column(name = \"name\")");
+            out.println("    private String name;");
+            out.println();
+
+            out.println("    public NotificationEmails(){ }");
+            out.println();
+
+            out.println("    public NotificationEmails(String email, String name){");
+            out.println("        if (EmailValidator.getInstance().isValid(email)){");
+            out.println("            this.email = email;");
+            out.println("            this.name = name;");
+            out.println("        }");
+            out.println("    }");
+
+            out.println("    public Long getId(){");
+            out.println("        return this.id;");
+            out.println("    }");
+
+            out.println("    public String getEmail(){");
+            out.println("        return this.email;");
+            out.println("    }");
+
+            out.println("    public String getName(){");
+            out.println("        return this.name;");
+            out.println("    }");
+
+            out.println("    public void setId(Long id){");
+            out.println("        this.id = id;");
+            out.println("    }");
+
+            out.println("    public void setEmail(String email){");
+            out.println("        this.email = email;");
+            out.println("    }");
+
+            out.println("    public void setName(String name){");
+            out.println("        this.name = name;");
+            out.println("    }");
+
+            out.println("}");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // печатаем entities
+    private void writeGlobalErrors () throws IOException {
+        String mClassName = "GlobalErrors";
+
+        JavaFileObject builderFile = filer.createSourceFile(mClassName);
+        try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+            // пакет файла
+            out.println("package " + springRootElement.getEnclosingElement() + ".entities;");
+            out.println();
+
+            // импорты
+            out.println("import java.util.Date;");
+            out.println("import javax.persistence.*;");
+            out.println();
+
+            out.println("@Entity");
+            out.println("@Table(name = \"global_errors\")");
+            out.println("public class " + mClassName + "{");
+            out.println("    @Id");
+            out.println("    @GeneratedValue(strategy = GenerationType.IDENTITY)");
+            out.println("    @Column(name = \"id\")");
+            out.println("    private Long id;");
+            out.println();
+
+            out.println("    @Column(name = \"code\", nullable = false)");
+            out.println("    private int code;");
+            out.println();
+
+            out.println("    @Column(name = \"message\", nullable = false, columnDefinition = \"text\")");
+            out.println("    private String message;");
+            out.println();
+
+            out.println("    @Column(name = \"location\", nullable = false, columnDefinition = \"text\")");
+            out.println("    private String location;");
+            out.println();
+
+            out.println("    @Column(name = \"stack_trace\", columnDefinition = \"text\")");
+            out.println("    private String stackTrace;");
+            out.println();
+
+            out.println("    @Column(name = \"importance\", nullable = false)");
+            out.println("    private int importance;");
+            out.println();
+
+            out.println("    @Column(name = \"date\")");
+            out.println("    private Date date;");
+            out.println();
+
+            out.println("    public GlobalErrors(){ }");
+            out.println();
+
+            out.println("    public GlobalErrors(int code, String message, String location, String stackTrace, int importance){");
+            out.println("        this.code = code;");
+            out.println("        this.message = message;");
+            out.println("        this.location = location;");
+            out.println("        this.importance = importance;");
+            out.println("        this.date = new Date();");
+            out.println("        this.stackTrace = stackTrace;");
+            out.println("    }");
+
+            out.println("    public Long getId(){");
+            out.println("        return this.id;");
+            out.println("    }");
+
+            out.println("    public int getCode(){");
+            out.println("        return this.code;");
+            out.println("    }");
+
+            out.println("    public String getMessage(){");
+            out.println("        return this.message;");
+            out.println("    }");
+
+            out.println("    public String getLocation(){");
+            out.println("        return this.location;");
+            out.println("    }");
+
+            out.println("    public String getStackTrace(){");
+            out.println("        return this.stackTrace;");
+            out.println("    }");
+
+            out.println("    public int getImportance(){");
+            out.println("        return this.importance;");
+            out.println("    }");
+
+            out.println("    public Date getDate(){");
+            out.println("        return this.date;");
+            out.println("    }");
+
+            out.println("    public void setId(Long id){");
+            out.println("        this.id = id;");
+            out.println("    }");
+
+            out.println("    public void setCode(int code){");
+            out.println("        this.code = code;");
+            out.println("    }");
+
+            out.println("    public void setMessage(String message){");
+            out.println("        this.message = message;");
+            out.println("    }");
+
+            out.println("    public void setLocation(String location){");
+            out.println("        this.location = location;");
+            out.println("    }");
+
+            out.println("    public void setStackTrace(String stackTrace){");
+            out.println("        this.stackTrace = stackTrace;");
+            out.println("    }");
+
+            out.println("    public void setImportance(int importance){");
+            out.println("        this.importance = importance;");
+            out.println("    }");
+
+            out.println("    public void setDate(Date date){");
+            out.println("        this.date = date;");
+            out.println("    }");
+
+            out.println("}");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // печатаем repository
+    private void writeGlobalErrorsRepository() throws IOException {
+        String mClassName = "GlobalErrorsRepository";
+
+        JavaFileObject builderFile = filer.createSourceFile(mClassName);
+        try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+            // пакет файла
+            out.println("package " + springRootElement.getEnclosingElement() + ".repositories;");
+            out.println();
+
+            // импорты
+            out.println("import "+springRootElement.getEnclosingElement()+".entities.GlobalErrors;");
+            out.println("import org.springframework.data.jpa.repository.JpaRepository;");
+            out.println("import org.springframework.stereotype.Repository;");
+            out.println();
+
+            out.println("@Repository");
+            out.println("public interface " + mClassName + " extends JpaRepository<GlobalErrors, Long>{}");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // печатаем repository
+    private void writeNotificationEmailsRepository() throws IOException {
+        String mClassName = "NotificationEmailsRepository";
+
+        JavaFileObject builderFile = filer.createSourceFile(mClassName);
+        try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+            // пакет файла
+            out.println("package " + springRootElement.getEnclosingElement() + ".repositories;");
+            out.println();
+
+            // импорты
+            out.println("import "+springRootElement.getEnclosingElement()+".entities.NotificationEmails;");
+            out.println("import org.springframework.data.jpa.repository.JpaRepository;");
+            out.println("import org.springframework.stereotype.Repository;");
+            out.println();
+
+            out.println("@Repository");
+            out.println("public interface " + mClassName + " extends JpaRepository<NotificationEmails, Long>{}");
         } catch (IOException e) {
             e.printStackTrace();
         }
