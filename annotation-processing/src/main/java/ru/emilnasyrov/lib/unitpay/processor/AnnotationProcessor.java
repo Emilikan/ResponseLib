@@ -163,14 +163,19 @@ public class AnnotationProcessor extends AbstractProcessor {
             out.println("import java.util.Iterator;");
             out.println("import java.util.List;");
             out.println("import java.util.Properties;");
+            out.println();
             // Объявление класса
             out.println("@Service");
             out.println("public class " + mClassName + " {");
             out.println("    private final NotificationEmailsRepository notificationEmailsRepository;");
             out.println("    private final GlobalErrorsRepository globalErrorsRepository;");
-            out.println("    private final MainSettingsProperties settingsProperties;");
             out.println("    private final static String MESSAGE_TYPE = \"text/html; charset=utf-8\";");
             out.println();
+
+            out.println("    public " + mClassName + "(NotificationEmailsRepository notificationEmailsRepository, GlobalErrorsRepository globalErrorsRepository){");
+            out.println("        this.notificationEmailsRepository = notificationEmailsRepository;");
+            out.println("        this.globalErrorsRepository = globalErrorsRepository;");
+            out.println("    }");
 
             out.println("    /**");
             out.println("     * Добавляем новую глобальную ошибку");
