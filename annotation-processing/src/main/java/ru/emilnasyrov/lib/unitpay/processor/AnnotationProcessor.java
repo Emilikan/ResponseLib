@@ -11,6 +11,7 @@ import ru.emilnasyrov.lib.unitpay.modules.ExceptionDateResponse;
 import ru.emilnasyrov.lib.unitpay.modules.Locals;
 
 import javax.annotation.processing.*;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -69,6 +70,7 @@ import java.util.stream.Collectors;
  */
 @SupportedAnnotationTypes({"ru.emilnasyrov.lib.unitpay.annotates.HttpException", "org.springframework.boot.autoconfigure.SpringBootApplication"})
 @AutoService(Processor.class)
+@SupportedSourceVersion(SourceVersion.RELEASE_14)
 public class AnnotationProcessor extends AbstractProcessor {
     private Elements elementUtils;
     private Filer filer;
@@ -100,7 +102,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 if (annotatedElement.getAnnotation(HttpException.class).addGlobalError().turnOn()){
                     addGlobalErrorFiles = true;
 
-                    // проверка, что класс, использующийся с обработчиком глобальных ошибок, расширяет классAbstractException
+                    // проверка, что класс, использующийся с обработчиком глобальных ошибок, расширяет класс AbstractException
                     TypeElement annotatedTypeElement = (TypeElement) annotatedElement;
                     if (!annotatedTypeElement.getSuperclass().equals(abstractExceptionTypeMirror)){
                         error(annotatedElement, "Elements using global error handler statements must extends from the class AbstractException");
