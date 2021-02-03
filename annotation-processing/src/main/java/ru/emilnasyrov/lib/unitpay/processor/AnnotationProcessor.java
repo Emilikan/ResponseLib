@@ -3,7 +3,10 @@ package ru.emilnasyrov.lib.unitpay.processor;
 import com.google.auto.service.AutoService;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
+import ru.emilnasyrov.lib.unitpay.annotates.GlobalError;
+import ru.emilnasyrov.lib.unitpay.annotates.GlobalErrorSettings;
 import ru.emilnasyrov.lib.unitpay.annotates.HttpException;
+import ru.emilnasyrov.lib.unitpay.modules.AbstractException;
 import ru.emilnasyrov.lib.unitpay.modules.ExceptionDateResponse;
 import ru.emilnasyrov.lib.unitpay.modules.Locals;
 
@@ -74,6 +77,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private final String packageName = "ru.emilnasyrov.lib.unitpay";
     private Element springRootElement = null;
+    private Element globalErrorSettingsElement = null;
+
+    private boolean addGlobalErrorFiles = false;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -85,7 +91,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        boolean addGlobalErrorFiles = false;
+        TypeMirror abstractExceptionTypeMirror = elementUtils.getTypeElement(AbstractException.class.getPackageName() + "." + AbstractException.class.getSimpleName()).asType();
 
         // STEP 1 выполняем проверку элементов и подсчитываем их количество
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(HttpException.class)) {
@@ -93,6 +99,12 @@ public class AnnotationProcessor extends AbstractProcessor {
                 annotatedOnlyForUnitpayClasses.add(annotatedElement);
                 if (annotatedElement.getAnnotation(HttpException.class).addGlobalError().turnOn()){
                     addGlobalErrorFiles = true;
+
+                    // проверка, что класс, использующийся с обработчиком глобальных ошибок, расширяет классAbstractException
+                    TypeElement annotatedTypeElement = (TypeElement) annotatedElement;
+                    if (!annotatedTypeElement.getSuperclass().equals(abstractExceptionTypeMirror)){
+                        error(annotatedElement, "Elements using global error handler statements must extends from the class AbstractException");
+                    }
                 }
             } else {
                 error(annotatedElement, "Only classes can be annotated with @%s",
@@ -115,6 +127,20 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
 
         if (addGlobalErrorFiles){
+            // проверка наличия аннотации с настройками
+            for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(GlobalErrorSettings.class)){
+                if (globalErrorSettingsElement == null) globalErrorSettingsElement = annotatedElement;
+                else {
+                    error(annotatedElement, "The project should only have 1 a class annotated @GlobalErrorSettings");
+                    return true;
+                }
+            }
+
+            if (globalErrorSettingsElement == null){
+                error(annotatedOnlyForUnitpayClasses.get(0), "The project must have a class annotated @GlobalErrorSettings");
+                return true;
+            }
+
             try {
                 writeNotificationEmails();
                 writeGlobalErrors();
@@ -214,10 +240,10 @@ public class AnnotationProcessor extends AbstractProcessor {
             out.println("    private void sendHTMLMail(String to, String subject, String html) throws MessagingException {");
             out.println("        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();");
             out.println();
-            out.println("        String host = smtpProperties.getHost();");
-            out.println("        int port = Integer.parseInt(smtpProperties.getPort());");
-            out.println("        String user = smtpProperties.getUsername();");
-            out.println("        String password = smtpProperties.getPassword();");
+            out.println("        String host = \""+globalErrorSettingsElement.getAnnotation(GlobalErrorSettings.class).host()+"\";");
+            out.println("        int port = "+globalErrorSettingsElement.getAnnotation(GlobalErrorSettings.class).port()+";");
+            out.println("        String user = \""+globalErrorSettingsElement.getAnnotation(GlobalErrorSettings.class).user()+"\";");
+            out.println("        String password = \""+globalErrorSettingsElement.getAnnotation(GlobalErrorSettings.class).password()+"\";");
             out.println();
             out.println("        mailSender.setHost(host);");
             out.println("        mailSender.setPort(port);");
@@ -304,13 +330,7 @@ public class AnnotationProcessor extends AbstractProcessor {
             out.println("        while (iterator.hasNext()){");
             out.println("            StackTraceElement stackTraceElement = iterator.next();");
             out.println("            String[] subStr = stackTraceElement.getClassName().split(\"\\\\.\");");
-            out.println("            StringBuilder prefix = new StringBuilder();");
-            out.println("            for (int i=0; i<3; i++){");
-            out.println("                prefix.append(subStr[i]).append(\".\");");
-            out.println("            }");
-            out.println("            if (prefix.toString().equals(settingsProperties.getGroup() + \".\")) {");
-            out.println("                result.append(stackTraceElement.getClassName()).append(\" метод \").append(stackTraceElement.getMethodName()).append(\" строка \").append(stackTraceElement.getLineNumber()).append(\"\\n\");");
-            out.println("            }");
+            out.println("            result.append(stackTraceElement.getClassName()).append(\" метод \").append(stackTraceElement.getMethodName()).append(\" строка \").append(stackTraceElement.getLineNumber()).append(\"\\n\");");
             out.println("        }");
             out.println("        return result.toString();");
             out.println("    }");
@@ -339,6 +359,10 @@ public class AnnotationProcessor extends AbstractProcessor {
             out.println("import "+packageName+".modules.Locals;");
             out.println("import org.springframework.web.bind.annotation.ExceptionHandler;");
             out.println("import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;");
+            // импорт класс глобальных ошибок
+            if(addGlobalErrorFiles){
+                out.println("import " + springRootElement.getEnclosingElement() + ".service.CodeGlobalErrorService;");
+            }
             // импорты аннотированных классов
             for(Element element: annotatedClasses){
                 out.println("import " + element.getEnclosingElement() + "." + element.getSimpleName() + ";");
@@ -371,6 +395,14 @@ public class AnnotationProcessor extends AbstractProcessor {
             out.print(mClassName);
             out.println(" extends ResponseEntityExceptionHandler {");
 
+            if (addGlobalErrorFiles){
+                out.println("    private final CodeGlobalErrorService globalErrorService;");
+
+                out.println("    public "+mClassName+"(CodeGlobalErrorService globalErrorService){");
+                out.println("        this.globalErrorService = globalErrorService;");
+                out.println("    }");
+            }
+
             // хендлеры
             for (Element element: annotatedClasses){
                 String exceptionClass = element.getSimpleName().toString();
@@ -393,7 +425,11 @@ public class AnnotationProcessor extends AbstractProcessor {
                 out.print(exceptionClass);
                 out.println(".class)");
 
-                out.println("    private ResponseEntity<?> handle" + exceptionClass + "() {");
+                if (!addGlobalErrorFiles) {
+                    out.println("    private ResponseEntity<?> handle" + exceptionClass + "() {");
+                } else {
+                    out.println("    private ResponseEntity<?> handle" + exceptionClass + "("+exceptionClass+" e) {");
+                }
 
 //                out.println("       return generateError"+exceptionResponse+"(");
 //                out.println("               HttpStatus."+httpStatus.getReasonPhrase().toUpperCase().replace(" ", "_")+",");
@@ -402,8 +438,14 @@ public class AnnotationProcessor extends AbstractProcessor {
 //                out.println("               Locals."+local+");");
 
                 // добавление вызова глобальной ошибки в код
-                if(element.getAnnotation(HttpException.class).addGlobalError().turnOn()){
-
+                GlobalError globalError = element.getAnnotation(HttpException.class).addGlobalError();
+                if(globalError.turnOn()){
+                    out.println("       globalErrorService.addNewGlobalError(");
+                    out.println("                "+code+",");
+                    out.println("                \""+globalError.message()+". Сообщение об ошибке: \" + e.getMMessage(),");
+                    out.println("                e.getStackTraceElements(),");
+                    out.println("                "+globalError.importance()+"");
+                    out.println("       );");
                 }
 
                 // TODO класс ответа обязательно должен реализовывать пустой конструктор (написать проверку на это)

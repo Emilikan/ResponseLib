@@ -1,8 +1,5 @@
 package ru.emilnasyrov.lib.unitpay.modules;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 public class AbstractException extends RuntimeException {
     private final StackTraceElement[] stackTraceElements;
     private final String message;
@@ -26,4 +23,8 @@ public class AbstractException extends RuntimeException {
         this.stackTraceElements = Thread.currentThread().getStackTrace();
         this.message = null;
     }
+
+    public StackTraceElement[] getStackTraceElements() { return stackTraceElements; }
+
+    public String getMMessage() { return message; }
 }

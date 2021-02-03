@@ -7,8 +7,9 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
-public @interface GlobalError {
-    boolean turnOn();
-    String message() default "";
-    int importance() default 0;
+public @interface GlobalErrorSettings {
+    String host();
+    int port();
+    String user();
+    String password();
 }
