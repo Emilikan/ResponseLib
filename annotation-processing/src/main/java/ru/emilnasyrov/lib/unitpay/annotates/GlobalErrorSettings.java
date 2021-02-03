@@ -12,4 +12,7 @@ public @interface GlobalErrorSettings {
     int port();
     String user();
     String password();
+    String title();
+    boolean ssl();
+    boolean debug() default false;
 }

@@ -9,7 +9,11 @@ import ru.emilnasyrov.lib.unitpay.modules.AbstractException;
         code = 333,
         message = "Какая-то ошибка (MHttpException)",
         responseClass = ErrorAnswerForUnitpay.class,
-        addGlobalError = @GlobalError(turnOn = true, message = "Сообщение", importance = 1)
+        addGlobalError = @GlobalError(
+                turnOn = true,
+                message = "Сообщение",
+                importance = 1
+        )
 )
 public class UnitpayException extends AbstractException {
 }
