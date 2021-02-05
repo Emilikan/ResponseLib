@@ -11,4 +11,9 @@ import ru.emilnasyrov.lib.unitpay.annotates.HttpException;
         responseClass = MyResponse.class
 )
 public class MyExceptions extends RuntimeException {
+
+    @HttpException(code = 301, message = "Приватная ошибка")
+    public class PrivateException extends RuntimeException {
+
+    }
 }
