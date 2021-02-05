@@ -15,7 +15,7 @@ public @interface HttpException {
     HttpStatus status() default HttpStatus.INTERNAL_SERVER_ERROR;
     int code();
     String message();
-    Locals locals() default Locals.RUS;
+    Locals local() default Locals.RUS;
     Class<? extends AbstractResponse> responseClass() default ExceptionDateResponse.class;
-    GlobalError addGlobalError() default @GlobalError(turnOn = false);
+    GlobalError globalError() default @GlobalError(turnOn = false);
 }

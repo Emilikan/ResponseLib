@@ -20,7 +20,7 @@ public class ErrorAnswerForUnitpay extends AbstractResponse {
     public HashMap<String, String> getError() { return error; }
 
     @Override
-    public ResponseEntity<?> generateError(HttpStatus httpStatus, int i, String s, Locals locals) {
-        return new ResponseEntity<>(new ErrorAnswerForUnitpay(s), httpStatus);
+    public ResponseEntity<?> generateError(HttpStatus httpStatus, int code, String message, Locals local) {
+        return new ResponseEntity<>(new ErrorAnswerForUnitpay(message), httpStatus);
     }
 }

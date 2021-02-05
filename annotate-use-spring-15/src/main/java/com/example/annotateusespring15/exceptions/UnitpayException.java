@@ -9,7 +9,7 @@ import ru.emilnasyrov.lib.unitpay.modules.AbstractException;
         code = 333,
         message = "Какая-то ошибка (UnitpayException)",
         responseClass = ErrorAnswerForUnitpay.class,
-        addGlobalError = @GlobalError(
+        globalError = @GlobalError(
                 turnOn = true,
                 message = "Сообщение",
                 importance = 1

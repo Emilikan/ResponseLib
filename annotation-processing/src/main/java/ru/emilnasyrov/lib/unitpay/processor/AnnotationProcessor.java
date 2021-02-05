@@ -96,7 +96,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(HttpException.class)) {
             if (annotatedElement.getKind() == ElementKind.CLASS) {
                 annotatedOnlyForUnitpayClasses.add(annotatedElement);
-                if (annotatedElement.getAnnotation(HttpException.class).addGlobalError().turnOn()){
+                if (annotatedElement.getAnnotation(HttpException.class).globalError().turnOn()){
                     // сообщаем программе, что пользователь использует глобальный обработчик ошибок
                     addGlobalErrorFiles = true;
 
@@ -429,7 +429,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 String exceptionResponse = typeElement.getSimpleName().toString();
                 int code = element.getAnnotation(HttpException.class).code();
                 String message = element.getAnnotation(HttpException.class).message();
-                Locals local = element.getAnnotation(HttpException.class).locals();
+                Locals local = element.getAnnotation(HttpException.class).local();
                 HttpStatus httpStatus = element.getAnnotation(HttpException.class).status();
 
                 out.println();
@@ -450,7 +450,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 //                out.println("               Locals."+local+");");
 
                 // добавление вызова глобальной ошибки в код
-                GlobalError globalError = element.getAnnotation(HttpException.class).addGlobalError();
+                GlobalError globalError = element.getAnnotation(HttpException.class).globalError();
                 if(globalError.turnOn()){
                     out.println("       globalErrorService.addNewGlobalError(");
                     out.println("                "+code+",");
