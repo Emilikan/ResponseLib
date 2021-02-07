@@ -1,19 +1,14 @@
 package com.example.annotateusespring15.exceptions;
 
 import com.example.annotateusespring15.response.ErrorAnswerForUnitpay;
-import ru.emilnasyrov.lib.unitpay.annotates.GlobalError;
-import ru.emilnasyrov.lib.unitpay.annotates.HttpException;
-import ru.emilnasyrov.lib.unitpay.modules.AbstractException;
+import ru.emilnasyrov.lib.response.annotates.GlobalError;
+import ru.emilnasyrov.lib.response.annotates.HttpException;
+import ru.emilnasyrov.lib.response.modules.AbstractException;
 
 @HttpException(
         code = 333,
         message = "Какая-то ошибка (UnitpayException)",
-        responseClass = ErrorAnswerForUnitpay.class,
-        globalError = @GlobalError(
-                turnOn = true,
-                message = "Сообщение",
-                importance = 1
-        )
+        responseClass = ErrorAnswerForUnitpay.class
 )
-public class UnitpayException extends AbstractException {
+public class UnitpayException extends RuntimeException {
 }

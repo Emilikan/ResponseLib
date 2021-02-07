@@ -1,6 +1,6 @@
 package com.example.annotateusespring15.exceptions;
 
-import ru.emilnasyrov.lib.unitpay.annotates.HttpException;
+import ru.emilnasyrov.lib.response.annotates.HttpException;
 
 @HttpException(
         code = 300,

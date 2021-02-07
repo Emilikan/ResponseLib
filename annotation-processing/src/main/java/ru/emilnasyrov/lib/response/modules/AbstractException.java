@@ -1,4 +1,4 @@
-package ru.emilnasyrov.lib.unitpay.modules;
+package ru.emilnasyrov.lib.response.modules;
 
 public class AbstractException extends RuntimeException {
     private final StackTraceElement[] stackTraceElements;

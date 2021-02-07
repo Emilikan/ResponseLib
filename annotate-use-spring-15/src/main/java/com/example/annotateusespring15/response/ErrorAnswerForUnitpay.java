@@ -2,8 +2,8 @@ package com.example.annotateusespring15.response;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import ru.emilnasyrov.lib.unitpay.modules.AbstractResponse;
-import ru.emilnasyrov.lib.unitpay.modules.Locals;
+import ru.emilnasyrov.lib.response.modules.AbstractResponse;
+import ru.emilnasyrov.lib.response.modules.Locals;
 
 import java.util.HashMap;
 

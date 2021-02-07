@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.emilnasyrov.lib</groupId>
-    <artifactId>unitpay</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>response</artifactId>
+    <version>1.0</version>
 
     <build>
         <plugins>
@@ -23,18 +23,11 @@
                         <configuration>
                             <compilerArgument>-proc:none</compilerArgument>
                             <includes>
-                                <include>ru/emilnasyrov/lib/annotation/LogMeCustomAnnotationProcessor.java</include>
+                                <include>ru/emilnasyrov/lib/response/processor/AnnotationProcessor.java</include>
                                 <!--include dependencies required for LogMeCustomAnnotationProcessor -->
                             </includes>
                         </configuration>
                     </execution>
-<!--                    <execution>-->
-<!--                        <id>compile-project</id>-->
-<!--                        <phase>compile</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>compile</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
                 </executions>
             </plugin>
         </plugins>
@@ -61,6 +54,11 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <version>2.4.2</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>javapoet</artifactId>
+            <version>1.13.0</version>
         </dependency>
     </dependencies>
 

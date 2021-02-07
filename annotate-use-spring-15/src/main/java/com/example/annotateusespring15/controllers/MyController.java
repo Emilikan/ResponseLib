@@ -7,12 +7,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.annotateusespring15.service.CodeGlobalErrorService;
+//import com.example.annotateusespring15.service.CodeGlobalErrorService;
 
 @RestController
 @AllArgsConstructor
 public class MyController {
-    private final CodeGlobalErrorService codeGlobalErrorService;
+    //private final CodeGlobalErrorService codeGlobalErrorService;
 
     @GetMapping("/getUnitpayException")
     public HttpStatus getUnitpayException(){
@@ -34,12 +34,12 @@ public class MyController {
 
     @GetMapping("/setNewGlobalError")
     public HttpStatus setNewGlobalError(){
-        codeGlobalErrorService.addNewGlobalError(
-                1000,
-                "",
-                "",
-                1
-        );
+//        codeGlobalErrorService.addNewGlobalError(
+//                1000,
+//                "",
+//                "",
+//                1
+//        );
         return HttpStatus.OK;
     }
 }

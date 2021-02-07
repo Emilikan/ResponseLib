@@ -1,12 +1,14 @@
-package ru.emilnasyrov.lib.unitpay.processor;
+package ru.emilnasyrov.lib.response.processor;
 
 import com.google.auto.service.AutoService;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
-import ru.emilnasyrov.lib.unitpay.annotates.GlobalError;
-import ru.emilnasyrov.lib.unitpay.annotates.HttpException;
-import ru.emilnasyrov.lib.unitpay.modules.AbstractException;
-import ru.emilnasyrov.lib.unitpay.modules.Locals;
+import ru.emilnasyrov.lib.response.annotates.GlobalError;
+import ru.emilnasyrov.lib.response.annotates.HttpException;
+import ru.emilnasyrov.lib.response.generators.AwesomeExceptionHandlerGenerator;
+import ru.emilnasyrov.lib.response.helper.Helper;
+import ru.emilnasyrov.lib.response.modules.AbstractException;
+import ru.emilnasyrov.lib.response.modules.Locals;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -65,16 +67,16 @@ import java.util.Set;
  * typeElement.getNestingKind - тип вложенности элемента
  */
 
-
-@SupportedAnnotationTypes({"ru.emilnasyrov.lib.unitpay.annotates.HttpException", "org.springframework.boot.autoconfigure.SpringBootApplication"})
 @AutoService(Processor.class)
+@SupportedAnnotationTypes({"ru.emilnasyrov.lib.unitpay.annotates.HttpException", "org.springframework.boot.autoconfigure.SpringBootApplication"})
 public class AnnotationProcessor extends AbstractProcessor {
+    private Types typeUtils;
     private Elements elementUtils;
     private Filer filer;
     private Messager messager;
-    private final List<Element> annotatedOnlyForUnitpayClasses = new ArrayList<>();
+    private final ArrayList<Element> annotatedOnlyForUnitpayClasses = new ArrayList<>();
 
-    private final String packageName = "ru.emilnasyrov.lib.unitpay";
+    private final String packageName = "ru.emilnasyrov.lib.response";
     private Element springRootElement = null;
 
     private boolean addGlobalErrorFiles = false;
@@ -85,6 +87,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         elementUtils = processingEnv.getElementUtils();
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
+        typeUtils = processingEnv.getTypeUtils();
     }
 
     @Override
@@ -158,10 +161,23 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
 
         if (annotatedOnlyForUnitpayClasses.size()!=0) {
+//            try {
+//                writeAwesomeExceptionHandler(annotatedOnlyForUnitpayClasses);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                return true;
+//            }
             try {
-                writeAwesomeExceptionHandler(annotatedOnlyForUnitpayClasses);
-            } catch (IOException e) {
+                new AwesomeExceptionHandlerGenerator(
+                        typeUtils,
+                        elementUtils,
+                        messager,
+                        filer,
+                        springRootElement
+                ).generate(annotatedOnlyForUnitpayClasses, addGlobalErrorFiles);
+            } catch (Throwable e){
                 e.printStackTrace();
+                error(springRootElement, "Error while generate class AwesomeException. Message: %s. ErrorName: %s.", e.getMessage(), e.getClass().getSimpleName());
                 return true;
             }
         }
@@ -175,7 +191,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         JavaFileObject builderFile = filer.createSourceFile(mClassName);
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             // пакет файла
-            out.println("package " + springRootElement.getEnclosingElement() + ".service;");
+            out.println("package " + springRootElement.getEnclosingElement() + ".response.lib.service;");
             out.println();
 
             // импорты
