@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import ru.emilnasyrov.lib.response.annotates.HttpException;
-import ru.emilnasyrov.lib.response.helper.Helper;
+import ru.emilnasyrov.lib.response.helper.FilesLocales;
 
 import javax.annotation.Nullable;
 import javax.annotation.processing.Filer;
@@ -16,12 +16,12 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic;
 import java.util.ArrayList;
 import java.util.List;
+
+import static ru.emilnasyrov.lib.response.helper.HelperFunctions.*;
 
 public class AwesomeExceptionHandlerGenerator {
     private final Elements elementUtils;
@@ -39,7 +39,7 @@ public class AwesomeExceptionHandlerGenerator {
         this.filer = filer;
         this.rootElement = rootElement;
         this.rootElementPackage = rootElement.getEnclosingElement().toString();
-        this.codeGlobalErrorClassName = ClassName.get(Helper.getCodeGlobalErrorServicePackage(rootElementPackage), Helper.getCodeGlobalErrorServiceName());
+        this.codeGlobalErrorClassName = ClassName.get(FilesLocales.getCodeGlobalErrorServicePackage(rootElementPackage), FilesLocales.getCodeGlobalErrorServiceName());
     }
 
     /**
@@ -52,7 +52,7 @@ public class AwesomeExceptionHandlerGenerator {
     public void generate(ArrayList<Element> exceptions, boolean addGlobalErrorFiles) throws Throwable {
         JavaFile.Builder javaFileBuilder = JavaFile
                 .builder(
-                        Helper.getAwesomeExceptionHandlerPackage(rootElementPackage),
+                        FilesLocales.getAwesomeExceptionHandlerPackage(rootElementPackage),
                         buildType(exceptions, addGlobalErrorFiles)
                 )
                 .indent("    ");
@@ -79,7 +79,7 @@ public class AwesomeExceptionHandlerGenerator {
      * @return TypeSpec - класс библиотеки JavaPoet, описывающий класс AwesomeExceptionHandler
      */
     private TypeSpec buildType(ArrayList<Element> exceptions, boolean addGlobalErrorFiles) {
-        TypeSpec.Builder builder =  TypeSpec.classBuilder(Helper.getAwesomeExceptionHandlerName())
+        TypeSpec.Builder builder =  TypeSpec.classBuilder(FilesLocales.getAwesomeExceptionHandlerName())
                 .addAnnotation(ControllerAdvice.class)
                 .addModifiers(Modifier.PUBLIC)
                 .superclass(ResponseEntityExceptionHandler.class);
@@ -243,7 +243,7 @@ public class AwesomeExceptionHandlerGenerator {
         try {
             Class<?> mClass = element.getAnnotation(HttpException.class).responseClass();
         } catch (MirroredTypeException mte){
-            typeElement = asTypeElement(mte.getTypeMirror());
+            typeElement = asTypeElement(typeUtils, mte.getTypeMirror());
         }
         return typeElement;
     }
@@ -271,53 +271,5 @@ public class AwesomeExceptionHandlerGenerator {
         return AnnotationSpec.builder(ExceptionHandler.class)
                 .addMember("value", "$T.class", element)
                 .build();
-    }
-
-    /**
-     * Отправка error-сообщения пользователю
-     *
-     * @param e элемент, на который будем ссылаться
-     * @param msg сообщение
-     * @param args аргументы для сообщения
-     */
-    private void error(Element e, String msg, Object... args) {
-        messager.printMessage(
-                Diagnostic.Kind.ERROR,
-                String.format(msg, args),
-                e);
-    }
-
-    /**
-     * Отправка warning-сообщения пользователю
-     *
-     * @param e элемент, на который будем ссылаться
-     * @param msg сообщение
-     * @param args аргументы для сообщения
-     */
-    private void warning(Element e, String msg, Object... args) {
-        messager.printMessage(
-                Diagnostic.Kind.WARNING,
-                String.format(msg, args),
-                e);
-    }
-
-    /**
-     * Приведение TypeMirror к TypeElement
-     *
-     * @param typeMirror элемент, который необходимо привести
-     * @return
-     */
-    private TypeElement asTypeElement(TypeMirror typeMirror) {
-        return (TypeElement) typeUtils.asElement(typeMirror);
-    }
-
-    /**
-     * Приведение первого символа строки к нижнему регистру
-     *
-     * @param s строка
-     * @return приведенная строка
-     */
-    private String toLowerCaseFirstLetter (String s) {
-        return Character.toLowerCase(s.charAt(0)) + s.substring(1);
     }
 }

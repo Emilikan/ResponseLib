@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import ru.emilnasyrov.lib.response.annotates.GlobalError;
 import ru.emilnasyrov.lib.response.annotates.HttpException;
 import ru.emilnasyrov.lib.response.generators.AwesomeExceptionHandlerGenerator;
-import ru.emilnasyrov.lib.response.helper.Helper;
+import ru.emilnasyrov.lib.response.generators.CodeGlobalErrorServiceGenerator;
 import ru.emilnasyrov.lib.response.modules.AbstractException;
 import ru.emilnasyrov.lib.response.modules.Locals;
 
@@ -153,9 +153,19 @@ public class AnnotationProcessor extends AbstractProcessor {
                 writeSMTPProperties();
                 writeGlobalErrorsRepository();
                 writeNotificationEmailsRepository();
-                writeCodeGlobalErrorService();
+                new CodeGlobalErrorServiceGenerator(
+                        typeUtils,
+                        elementUtils,
+                        messager,
+                        filer,
+                        springRootElement).generate();
+                //writeCodeGlobalErrorService();
             } catch (IOException e) {
                 e.printStackTrace();
+                return true;
+            } catch (Throwable e){
+                e.printStackTrace();
+                error(springRootElement, "Error while generate class CodeGlobalErrorServiceGenerator. Message: %s. ErrorName: %s.", e.getMessage(), e.getClass().getSimpleName());
                 return true;
             }
         }
@@ -500,7 +510,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         JavaFileObject builderFile = filer.createSourceFile(mClassName);
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             // пакет файла
-            out.println("package " + springRootElement.getEnclosingElement() + ".properties;");
+            out.println("package " + springRootElement.getEnclosingElement() + ".response.lib.properties;");
             out.println();
 
             // импорты
@@ -590,7 +600,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         JavaFileObject builderFile = filer.createSourceFile(mClassName);
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             // пакет файла
-            out.println("package " + springRootElement.getEnclosingElement() + ".entities;");
+            out.println("package " + springRootElement.getEnclosingElement() + ".response.lib.entities;");
             out.println();
 
             // импорты
@@ -663,7 +673,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         JavaFileObject builderFile = filer.createSourceFile(mClassName);
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             // пакет файла
-            out.println("package " + springRootElement.getEnclosingElement() + ".entities;");
+            out.println("package " + springRootElement.getEnclosingElement() + ".response.lib.entities;");
             out.println();
 
             // импорты
@@ -786,11 +796,11 @@ public class AnnotationProcessor extends AbstractProcessor {
         JavaFileObject builderFile = filer.createSourceFile(mClassName);
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             // пакет файла
-            out.println("package " + springRootElement.getEnclosingElement() + ".repositories;");
+            out.println("package " + springRootElement.getEnclosingElement() + ".response.lib.repositories;");
             out.println();
 
             // импорты
-            out.println("import "+springRootElement.getEnclosingElement()+".entities.GlobalErrors;");
+            out.println("import "+springRootElement.getEnclosingElement()+".response.lib.entities.GlobalErrors;");
             out.println("import org.springframework.data.jpa.repository.JpaRepository;");
             out.println("import org.springframework.stereotype.Repository;");
             out.println();
@@ -809,11 +819,11 @@ public class AnnotationProcessor extends AbstractProcessor {
         JavaFileObject builderFile = filer.createSourceFile(mClassName);
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             // пакет файла
-            out.println("package " + springRootElement.getEnclosingElement() + ".repositories;");
+            out.println("package " + springRootElement.getEnclosingElement() + ".response.lib.repositories;");
             out.println();
 
             // импорты
-            out.println("import "+springRootElement.getEnclosingElement()+".entities.NotificationEmails;");
+            out.println("import "+springRootElement.getEnclosingElement()+".response.lib.entities.NotificationEmails;");
             out.println("import org.springframework.data.jpa.repository.JpaRepository;");
             out.println("import org.springframework.stereotype.Repository;");
             out.println();
