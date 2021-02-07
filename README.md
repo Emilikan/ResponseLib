@@ -35,11 +35,19 @@ ResponseLib - это библиотека, позволяющая стандар
     <version>1.5.0-b01</version>
 </dependency>
 ```
-- SpringBoot
+- SpringBoot mail
 ```
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-mail</artifactId>
     <version>2.4.2</version>
+</dependency>
+```
+- JavaPoet
+```
+<dependency>
+    <groupId>com.squareup</groupId>
+    <artifactId>javapoet</artifactId>
+    <version>1.13.0</version>
 </dependency>
 ```
