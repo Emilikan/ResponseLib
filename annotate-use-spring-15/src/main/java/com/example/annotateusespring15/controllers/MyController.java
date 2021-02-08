@@ -21,7 +21,7 @@ public class MyController {
     }
 
     @GetMapping("/getDefaultException")
-    public HttpStatus getDefaultException() {
+    public HttpStatus getDefaultException() throws DefaultException {
 
         throw new DefaultException();
     }

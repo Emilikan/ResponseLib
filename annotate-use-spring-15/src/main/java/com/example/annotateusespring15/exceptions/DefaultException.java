@@ -5,5 +5,5 @@ import ru.emilnasyrov.lib.response.annotates.HttpException;
 @HttpException(
         code = 300,
         message = "Ошибка с дефолтной кофигурацией")
-public class DefaultException extends RuntimeException{
+public class DefaultException extends RuntimeException {
 }

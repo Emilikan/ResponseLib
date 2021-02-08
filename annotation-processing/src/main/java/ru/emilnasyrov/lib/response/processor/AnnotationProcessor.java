@@ -159,7 +159,6 @@ public class AnnotationProcessor extends AbstractProcessor {
                         messager,
                         filer,
                         springRootElement).generate();
-                //writeCodeGlobalErrorService();
             } catch (IOException e) {
                 e.printStackTrace();
                 return true;
