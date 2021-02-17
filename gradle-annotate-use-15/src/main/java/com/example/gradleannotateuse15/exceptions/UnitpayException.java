@@ -1,9 +1,7 @@
-package com.example.annotateusespring15.exceptions;
+package com.example.gradleannotateuse15.exceptions;
 
-import com.example.annotateusespring15.response.ErrorAnswerForUnitpay;
-import ru.emilnasyrov.lib.response.annotates.GlobalError;
+import com.example.gradleannotateuse15.response.ErrorAnswerForUnitpay;
 import ru.emilnasyrov.lib.response.annotates.HttpException;
-import ru.emilnasyrov.lib.response.modules.AbstractException;
 
 @HttpException(
         code = 333,

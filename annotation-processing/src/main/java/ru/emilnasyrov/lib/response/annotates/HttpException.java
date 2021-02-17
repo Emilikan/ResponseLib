@@ -1,8 +1,8 @@
-package ru.emilnasyrov.lib.unitpay.annotates;
+package ru.emilnasyrov.lib.response.annotates;
 
-import ru.emilnasyrov.lib.unitpay.modules.AbstractResponse;
-import ru.emilnasyrov.lib.unitpay.modules.ExceptionDateResponse;
-import ru.emilnasyrov.lib.unitpay.modules.Locals;
+import ru.emilnasyrov.lib.response.modules.AbstractResponse;
+import ru.emilnasyrov.lib.response.modules.ExceptionDateResponse;
+import ru.emilnasyrov.lib.response.modules.Locals;
 
 import java.lang.annotation.*;
 

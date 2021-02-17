@@ -1,13 +1,13 @@
-package com.example.annotateusespring15.controllers;
+package com.example.gradleannotateuse15.controllers;
 
-import com.example.annotateusespring15.exceptions.DefaultException;
-import com.example.annotateusespring15.exceptions.MyExceptions;
-import com.example.annotateusespring15.exceptions.UnitpayException;
+import com.example.gradleannotateuse15.exceptions.DefaultException;
+import com.example.gradleannotateuse15.exceptions.MyExceptions;
+import com.example.gradleannotateuse15.exceptions.UnitpayException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-//import com.example.annotateusespring15.service.CodeGlobalErrorService;
+//import com.example.gradleannotateuse15.service.CodeGlobalErrorService;
 
 @RestController
 @AllArgsConstructor
@@ -18,6 +18,12 @@ public class MyController {
     public HttpStatus getUnitpayException(){
 
         throw new UnitpayException();
+    }
+
+    @GetMapping("/check")
+    public HttpStatus check(){
+
+        return HttpStatus.OK;
     }
 
     @GetMapping("/getDefaultException")

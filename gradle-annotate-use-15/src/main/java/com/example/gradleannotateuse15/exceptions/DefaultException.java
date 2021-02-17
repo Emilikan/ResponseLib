@@ -1,4 +1,4 @@
-package com.example.annotateusespring15.exceptions;
+package com.example.gradleannotateuse15.exceptions;
 
 import ru.emilnasyrov.lib.response.annotates.HttpException;
 

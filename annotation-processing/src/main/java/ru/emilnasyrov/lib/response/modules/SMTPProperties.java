@@ -1,4 +1,4 @@
-package ru.emilnasyrov.lib.unitpay.modules;
+package ru.emilnasyrov.lib.response.modules;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

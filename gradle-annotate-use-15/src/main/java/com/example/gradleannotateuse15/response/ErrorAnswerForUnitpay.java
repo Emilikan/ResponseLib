@@ -1,4 +1,4 @@
-package com.example.annotateusespring15.response;
+package com.example.gradleannotateuse15.response;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package ru.emilnasyrov.lib.unitpay.annotates;
+package ru.emilnasyrov.lib.response.annotates;
 
 import java.lang.annotation.*;
 
