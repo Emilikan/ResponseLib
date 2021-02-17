@@ -53,19 +53,19 @@ ResponseLib - это библиотека, позволяющая стандар
 ```
 Для работы в Gradle. annotationProcessor указывает какие бибилиотеки должны быть доступны на уровне компиляции
 ```
-    compileOnly 'ru.emilnasyrov.lib:response:1.0'
-    annotationProcessor 'ru.emilnasyrov.lib:response:1.0'
-	implementation group: 'commons-validator', name: 'commons-validator', version: '1.7'
-	implementation group: 'javax.mail', name: 'mail', version: '1.5.0-b01'
-	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.4.2'
-	implementation group: 'org.springframework', name: 'spring-web', version: '5.3.4'
-	implementation('org.springframework.boot:spring-boot-starter-web')
-	annotationProcessor group: 'org.springframework', name: 'spring-web', version: '5.3.4'
-	annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.4.2'
-	annotationProcessor group: 'com.squareup', name: 'javapoet', version: '1.13.0'
-	annotationProcessor group: 'javax.persistence', name: 'javax.persistence-api', version: '2.2'
-	annotationProcessor group: 'commons-validator', name: 'commons-validator', version: '1.7'
-	annotationProcessor 'org.springframework.boot:spring-boot-starter-data-jpa'
-	annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.4.2'
-	annotationProcessor('org.springframework.boot:spring-boot-starter-web')
+compileOnly 'ru.emilnasyrov.lib:response:1.0'
+annotationProcessor 'ru.emilnasyrov.lib:response:1.0'
+implementation group: 'commons-validator', name: 'commons-validator', version: '1.7'
+implementation group: 'javax.mail', name: 'mail', version: '1.5.0-b01'
+implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.4.2'
+implementation group: 'org.springframework', name: 'spring-web', version: '5.3.4'
+implementation('org.springframework.boot:spring-boot-starter-web')
+annotationProcessor group: 'org.springframework', name: 'spring-web', version: '5.3.4'
+annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: '2.4.2'
+annotationProcessor group: 'com.squareup', name: 'javapoet', version: '1.13.0'
+annotationProcessor group: 'javax.persistence', name: 'javax.persistence-api', version: '2.2'
+annotationProcessor group: 'commons-validator', name: 'commons-validator', version: '1.7'
+annotationProcessor 'org.springframework.boot:spring-boot-starter-data-jpa'
+annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.4.2'
+annotationProcessor('org.springframework.boot:spring-boot-starter-web')
 ```
