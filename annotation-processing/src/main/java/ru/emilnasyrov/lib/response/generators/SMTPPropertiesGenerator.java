@@ -1,9 +1,8 @@
 package ru.emilnasyrov.lib.response.generators;
 
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.FilerException;
@@ -57,9 +56,23 @@ public class SMTPPropertiesGenerator {
         return TypeSpec.classBuilder(getSmtpPropertiesName())
                 .addModifiers(Modifier.PUBLIC)
                 .addFields(buildPropertyFields())
+                .addAnnotation(buildConfigurationAnnotation("ResponseLibSMTPProperties"))
+                .addAnnotation(buildConfigurationPropertiesAnnotation("response.lib.smtp"))
                 .addMethod(buildEmptyConstructor())
                 .addMethod(buildAllArgsConstructor(buildPropertyFields()))
                 .addMethods(buildGettersAndSetters(buildPropertyFields()))
+                .build();
+    }
+
+    private AnnotationSpec buildConfigurationPropertiesAnnotation (String name) {
+        return AnnotationSpec.builder(ConfigurationProperties.class)
+                .addMember("value", "\"" + name + "\"")
+                .build();
+    }
+
+    private AnnotationSpec buildConfigurationAnnotation(String name){
+        return AnnotationSpec.builder(Configuration.class)
+                .addMember("value", "\"" + name + "\"")
                 .build();
     }
 
