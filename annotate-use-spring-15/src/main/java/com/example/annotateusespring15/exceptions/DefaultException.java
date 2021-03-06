@@ -3,7 +3,7 @@ package com.example.annotateusespring15.exceptions;
 import ru.emilnasyrov.lib.response.annotates.HttpException;
 
 @HttpException(
-        code = 300,
+        code = 333,
         message = "Ошибка с дефолтной кофигурацией")
 public class DefaultException extends RuntimeException {
 }

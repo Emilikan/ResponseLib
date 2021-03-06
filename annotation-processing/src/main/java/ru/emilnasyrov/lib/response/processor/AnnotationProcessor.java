@@ -16,6 +16,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static ru.emilnasyrov.lib.response.helper.HelperFunctions.*;
@@ -29,6 +30,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     private Messager messager;
 
     private final ArrayList<Element> annotatedClasses = new ArrayList<>();
+    private List<Integer> allCodes = new ArrayList<>();
     private Element springRootElement = null;
 
     private boolean addGlobalErrorFiles = false;
@@ -51,6 +53,14 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(HttpException.class)) {
             if (annotatedElement.getKind() == ElementKind.CLASS) {
                 annotatedClasses.add(annotatedElement);
+
+                // проверяем уникальность кодов
+                if (allCodes.contains(annotatedElement.getAnnotation(HttpException.class).code())){
+                    error(annotatedElement, messager, "The parameter code must be unique");
+                    return true;
+                }
+                allCodes.add(annotatedElement.getAnnotation(HttpException.class).code());
+
                 if (annotatedElement.getAnnotation(HttpException.class).globalError().turnOn()){
                     // сообщаем программе, что пользователь использует глобальный обработчик ошибок
                     addGlobalErrorFiles = true;

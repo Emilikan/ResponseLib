@@ -33,3 +33,7 @@
 2021-02-17 15:41:48.762  INFO 11129 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
 2021-02-17 15:41:48.868  WARN 11129 --- [http-nio-8080-exec-1] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.example.gradleannotateuse15.exceptions.UnitpayException]
 2021-02-17 15:47:47.738  WARN 11129 --- [http-nio-8080-exec-5] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.example.gradleannotateuse15.exceptions.MyExceptions]
+2021-02-17 17:05:48.166  INFO 11129 --- [SpringContextShutdownHook] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'applicationTaskExecutor'
+2021-02-17 17:05:48.168  INFO 11129 --- [SpringContextShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2021-02-17 17:05:48.173  INFO 11129 --- [SpringContextShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2021-02-17 17:05:48.178  INFO 11129 --- [SpringContextShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
