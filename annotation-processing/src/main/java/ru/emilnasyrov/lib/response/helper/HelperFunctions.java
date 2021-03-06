@@ -1,9 +1,6 @@
 package ru.emilnasyrov.lib.response.helper;
 
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.*;
 
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
@@ -14,6 +11,7 @@ import javax.lang.model.util.Types;
 import javax.persistence.Column;
 import javax.persistence.Table;
 import javax.tools.Diagnostic;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,4 +126,68 @@ public class HelperFunctions {
         }
         return gettersAndSetters;
     }
+
+
+    public static MethodSpec buildJpaAllAnd (String methodName, TypeName returnType, GlobalErrorsParams... params) {
+        return generateJpaGlobalErrorsMethodsBuilder(methodName, "and", params).returns(returnType).build();
+    }
+
+    public static MethodSpec buildJpaAllOr (String methodName, TypeName returnType, GlobalErrorsParams... params) {
+        return generateJpaGlobalErrorsMethodsBuilder(methodName, "or", params).returns(returnType).build();
+    }
+
+    public static MethodSpec buildJpaAllAnd (String methodName, Type returnType, GlobalErrorsParams... params) {
+        return generateJpaGlobalErrorsMethodsBuilder(methodName, "and", params).returns(returnType).build();
+    }
+
+    public static MethodSpec buildJpaAllOr (String methodName, Type returnType, GlobalErrorsParams... params) {
+        return generateJpaGlobalErrorsMethodsBuilder(methodName, "or", params).returns(returnType).build();
+    }
+
+    public static MethodSpec buildJpaAllAnd (String methodName, TypeName returnType, NotificationEmailsParams... params) {
+        return generateJpaNotificationEmailsMethodsBuilder(methodName, "and", params).returns(returnType).build();
+    }
+
+    public static MethodSpec buildJpaAllOr (String methodName, TypeName returnType, NotificationEmailsParams... params) {
+        return generateJpaNotificationEmailsMethodsBuilder(methodName, "or", params).returns(returnType).build();
+    }
+
+    public static MethodSpec buildJpaAllAnd (String methodName, Type returnType, NotificationEmailsParams... params) {
+        return generateJpaNotificationEmailsMethodsBuilder(methodName, "and", params).returns(returnType).build();
+    }
+
+    public static MethodSpec buildJpaAllOr (String methodName, Type returnType, NotificationEmailsParams... params) {
+        return generateJpaNotificationEmailsMethodsBuilder(methodName, "or", params).returns(returnType).build();
+    }
+
+    private static MethodSpec.Builder generateJpaGlobalErrorsMethodsBuilder(String methodName, String pref, GlobalErrorsParams... params) {
+        String name = methodName + "By";
+        List<ParameterSpec> parameterSpecs = new ArrayList<>();
+
+        for (GlobalErrorsParams param : params){
+            name += toUpperCaseFirstLetter(param.toString()) + toUpperCaseFirstLetter(pref);
+            parameterSpecs.add(ParameterSpec.builder(param.getType(), param.name()).build());
+        }
+        name = name.substring(0, name.length()-pref.length());
+
+        return MethodSpec.methodBuilder(name)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .addParameters(parameterSpecs);
+    }
+
+    private static MethodSpec.Builder generateJpaNotificationEmailsMethodsBuilder(String methodName, String pref, NotificationEmailsParams... params) {
+        String name = methodName + "By";
+        List<ParameterSpec> parameterSpecs = new ArrayList<>();
+
+        for (NotificationEmailsParams param : params){
+            name += toUpperCaseFirstLetter(param.toString()) + toUpperCaseFirstLetter(pref);
+            parameterSpecs.add(ParameterSpec.builder(param.getType(), param.name()).build());
+        }
+        name = name.substring(0, name.length()-pref.length());
+
+        return MethodSpec.methodBuilder(name)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .addParameters(parameterSpecs);
+    }
+
 }
